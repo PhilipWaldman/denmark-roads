@@ -72,6 +72,8 @@ void draw() {
       line(begin.x, begin.y, end.x, end.y);
     }
   }
+  
+  saveFrame("denmark.png");
 }
 
 
