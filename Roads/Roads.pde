@@ -2,14 +2,14 @@
 // https://archive.ics.uci.edu/ml/datasets/3D+Road+Network+%28North+Jutland%2C+Denmark%29
 
 ArrayList<ArrayList<Coordinate>> roads;
-float minLat=Float.MAX_VALUE, maxLat=Float.MIN_VALUE, 
-  minLong=Float.MAX_VALUE, maxLong=Float.MIN_VALUE, 
-  minAlt=Float.MAX_VALUE, maxAlt=Float.MIN_VALUE;
+float minLat = Float.MAX_VALUE, maxLat = Float.MIN_VALUE;
+float minLong = Float.MAX_VALUE, maxLong = Float.MIN_VALUE;
+float minAlt = Float.MAX_VALUE, maxAlt = Float.MIN_VALUE;
+float scale_factor = 500; // pixels per degree
 
 void setup() {
-  fullScreen();
+  //fullScreen();
   background(0);
-  init();
   noLoop();
 }
 
@@ -18,36 +18,42 @@ void init() {
   roads = new ArrayList<ArrayList<Coordinate>>(); //[OSM_ID][Coordinate]
 
   int prevID = Integer.MIN_VALUE;
-  for (int i=1; i<file.getRowCount(); i++) {
+  for (int i = 1; i < file.getRowCount(); i++) {
     TableRow cur = file.getRow(i);
+    int id = cur.getInt(0);
     float curLong = cur.getFloat(1);
     float curLat = cur.getFloat(2);
     float curAlt = cur.getFloat(3);
-    //float curAlt = 0;
 
-    if (cur.getInt(0)!=prevID) {
-      prevID=cur.getInt(0);
+    if (id != prevID) {
+      prevID = id;
       roads.add(0, new ArrayList<Coordinate>());
     }
     roads.get(0).add(new Coordinate(curLat, curLong, curAlt));
 
-    // -----------------------------------
+    // Find min or max latitude, longitude, and altitude
 
-    if (curLat<minLat)
-      minLat=curLat;
-    else if (curLat>maxLat)
-      maxLat=curLat;
+    if (curLat < minLat)
+      minLat = curLat;
+    else if (curLat > maxLat)
+      maxLat = curLat;
 
-    if (curLong<minLong)
-      minLong=curLong;
-    else if (curLong>maxLong)
-      maxLong=curLong;
+    if (curLong < minLong)
+      minLong = curLong;
+    else if (curLong > maxLong)
+      maxLong = curLong;
 
-    if (curAlt<minAlt)
-      minAlt=curAlt;
-    else if (curAlt>maxAlt)
-      maxAlt=curAlt;
+    if (curAlt < minAlt)
+      minAlt = curAlt;
+    else if (curAlt > maxAlt)
+      maxAlt = curAlt;
   }
+}
+
+void settings() {
+  init();
+  // I don't know how to properly scale the lat and long to look perfect. This looks decent.
+  size(int((maxLong - minLong) * scale_factor / 2), int((maxLat - minLat) * scale_factor));
 }
 
 void draw() {
@@ -55,13 +61,13 @@ void draw() {
   translate(0, -height);
 
   for (ArrayList<Coordinate> road : roads) {
-    //stroke(random(255), random(255), random(255));
-
-    for (int i=0; i<road.size()-1; i++) {
+    for (int i = 0; i < road.size() - 1; i++) {
       Coordinate curCoord = road.get(i);
-      Coordinate nextCoord = road.get(i+1);
-      float col = map(road.get(i).altitude, minAlt, maxAlt, 0, 255);
-      stroke(255-col, col, 0);
+      Coordinate nextCoord = road.get(i + 1);
+      
+      // red = low, green = high
+      float col = map(curCoord.altitude, minAlt, maxAlt, 0, 255);
+      stroke(255 - col, col, 0);
 
       PVector begin = new PVector();
       begin.x = map(curCoord.longitude, minLong, maxLong, 0, width);
@@ -75,13 +81,3 @@ void draw() {
   
   saveFrame("denmark.png");
 }
-
-
-
-/**
- String[] lines = loadStrings("https://archive.ics.uci.edu/ml/machine-learning-databases/00246/3D_spatial_network.txt");
- println("------------ DONE LOADING ---------------");
- println("there are " + lines.length + " lines");
- saveStrings("nums.txt", lines);
- println("------------ DONE SAVING ---------------");
- */

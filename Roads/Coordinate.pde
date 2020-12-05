@@ -9,8 +9,7 @@ class Coordinate {
     altitude = alt;
   }
   
-  String toString(){
-    return "{lat:"+latitude+", lon:"+longitude+", alt:"+altitude+"}";
-    //return "-";
+  String toString() {
+    return "{lat:" + latitude + ", lon:" + longitude + ", alt:" + altitude + "}";
   }
 }
